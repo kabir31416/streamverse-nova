@@ -2,7 +2,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Search, TrendingUp, Clock, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { channels } from "@/lib/iptv-data";
+import { useIptv } from "@/hooks/useIptv";
 
 const recent = ["ESPN HD", "BBC News", "HBO Max"];
 const trending = ["FIFA Final", "Premier League", "Breaking News", "Live Concerts"];
