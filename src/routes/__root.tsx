@@ -116,8 +116,13 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <TopNav />
+      <main className="min-h-screen pt-28 lg:pt-20">
+        <Outlet />
+      </main>
+      <footer className="mt-20 border-t border-border/40 py-8 text-center text-xs text-muted-foreground">
+        StreamVerse TV · Premium IPTV streaming · {new Date().getFullYear()}
+      </footer>
     </QueryClientProvider>
   );
 }
