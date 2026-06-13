@@ -9,6 +9,8 @@ const trending = ["FIFA Final", "Premier League", "Breaking News", "Live Concert
 
 export function SearchModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [q, setQ] = useState("");
+  const { data } = useIptv();
+  const channels = data?.channels ?? [];
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -20,8 +22,8 @@ export function SearchModal({ open, onClose }: { open: boolean; onClose: () => v
     if (!q.trim()) return [];
     return channels
       .filter((c) => c.name.toLowerCase().includes(q.toLowerCase()))
-      .slice(0, 6);
-  }, [q]);
+      .slice(0, 8);
+  }, [q, channels]);
 
   return (
     <AnimatePresence>
