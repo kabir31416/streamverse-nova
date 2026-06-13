@@ -1,9 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Filter } from "lucide-react";
-import { categories, channels } from "@/lib/iptv-data";
+import { Filter, Loader2 } from "lucide-react";
+import { categoryTiles } from "@/lib/iptv-data";
 import { ChannelCard } from "@/components/ChannelCard";
+import { useIptv } from "@/hooks/useIptv";
 
 export const Route = createFileRoute("/live")({
   head: () => ({
@@ -16,23 +17,34 @@ export const Route = createFileRoute("/live")({
 });
 
 function LivePage() {
+  const { data, isLoading } = useIptv();
+  const channels = data?.channels ?? [];
+
   const [cat, setCat] = useState<string>("all");
   const [country, setCountry] = useState<string>("all");
   const [hdOnly, setHdOnly] = useState(false);
-  const [favOnly, setFavOnly] = useState(false);
+  const [limit, setLimit] = useState(60);
 
-  const countries = useMemo(
-    () => Array.from(new Set(channels.map((c) => c.country))),
-    [],
-  );
+  const countries = useMemo(() => {
+    const map = new Map<string, { code: string; name: string; flag: string; count: number }>();
+    for (const c of channels) {
+      const e = map.get(c.country) ?? { code: c.country, name: c.countryName, flag: c.flag, count: 0 };
+      e.count++;
+      map.set(c.country, e);
+    }
+    return Array.from(map.values()).sort((a, b) => b.count - a.count).slice(0, 40);
+  }, [channels]);
 
-  const filtered = channels.filter((c) => {
-    if (cat !== "all" && c.category.toLowerCase() !== cat.toLowerCase()) return false;
-    if (country !== "all" && c.country !== country) return false;
-    if (hdOnly && !c.hd) return false;
-    if (favOnly && Number(c.id.split("-")[1]) % 4 !== 0) return false;
-    return true;
-  });
+  const filtered = useMemo(() => {
+    return channels.filter((c) => {
+      if (cat !== "all" && !c.categories.includes(cat)) return false;
+      if (country !== "all" && c.country !== country) return false;
+      if (hdOnly && !c.hd) return false;
+      return true;
+    });
+  }, [channels, cat, country, hdOnly]);
+
+  const visible = filtered.slice(0, limit);
 
   return (
     <div className="mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-8">
@@ -45,25 +57,26 @@ function LivePage() {
 
             <FilterGroup label="Category">
               <Pill active={cat === "all"} onClick={() => setCat("all")}>All</Pill>
-              {categories.map((c) => (
-                <Pill key={c.id} active={cat === c.name} onClick={() => setCat(c.name)}>
-                  {c.name}
-                </Pill>
-              ))}
+              {categoryTiles
+                .filter((c) => c.iptvId)
+                .map((c) => (
+                  <Pill key={c.id} active={cat === c.iptvId} onClick={() => setCat(c.iptvId!)}>
+                    {c.name}
+                  </Pill>
+                ))}
             </FilterGroup>
 
             <FilterGroup label="Country">
               <Pill active={country === "all"} onClick={() => setCountry("all")}>All</Pill>
               {countries.map((c) => (
-                <Pill key={c} active={country === c} onClick={() => setCountry(c)}>
-                  {c}
+                <Pill key={c.code} active={country === c.code} onClick={() => setCountry(c.code)}>
+                  {c.flag} {c.name}
                 </Pill>
               ))}
             </FilterGroup>
 
             <FilterGroup label="Options">
               <Toggle checked={hdOnly} onChange={setHdOnly} label="HD Only" />
-              <Toggle checked={favOnly} onChange={setFavOnly} label="Favorites" />
             </FilterGroup>
           </div>
         </aside>
@@ -73,22 +86,41 @@ function LivePage() {
             <div>
               <h1 className="text-3xl font-bold">Live TV</h1>
               <p className="text-sm text-muted-foreground">
-                {filtered.length} channels available
+                {isLoading ? "Loading…" : `${filtered.length.toLocaleString()} channels`}
               </p>
             </div>
           </div>
-          <motion.div
-            layout
-            className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
-          >
-            {filtered.map((c) => (
-              <ChannelCard key={c.id} channel={c} />
-            ))}
-          </motion.div>
-          {filtered.length === 0 && (
-            <div className="py-20 text-center text-muted-foreground">
-              No channels match your filters.
+
+          {isLoading ? (
+            <div className="grid place-items-center py-20">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
+          ) : (
+            <>
+              <motion.div
+                layout
+                className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
+              >
+                {visible.map((c) => (
+                  <ChannelCard key={c.id} channel={c} />
+                ))}
+              </motion.div>
+              {visible.length < filtered.length && (
+                <div className="mt-8 text-center">
+                  <button
+                    onClick={() => setLimit((l) => l + 60)}
+                    className="rounded-full glass px-6 py-2.5 text-sm font-semibold hover:bg-secondary"
+                  >
+                    Load more ({filtered.length - visible.length} remaining)
+                  </button>
+                </div>
+              )}
+              {filtered.length === 0 && (
+                <div className="py-20 text-center text-muted-foreground">
+                  No channels match your filters.
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
@@ -102,7 +134,7 @@ function FilterGroup({ label, children }: { label: string; children: React.React
       <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
         {label}
       </div>
-      <div className="flex flex-wrap gap-1.5">{children}</div>
+      <div className="scrollbar-hide flex max-h-48 flex-wrap gap-1.5 overflow-y-auto">{children}</div>
     </div>
   );
 }

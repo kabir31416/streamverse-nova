@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Settings, Clock, Heart, Tv, Bell, Globe, Shield } from "lucide-react";
-import { channels, continueWatching } from "@/lib/iptv-data";
+import { useFavorites, useIptv, useRecent } from "@/hooks/useIptv";
 
 export const Route = createFileRoute("/profile")({
   component: ProfilePage,
@@ -9,7 +9,14 @@ export const Route = createFileRoute("/profile")({
 
 function ProfilePage() {
   const [tab, setTab] = useState<"history" | "favorites" | "settings">("history");
-  const favs = channels.slice(0, 6);
+  const { data } = useIptv();
+  const channels = data?.channels ?? [];
+  const { ids: favIds } = useFavorites();
+  const { ids: recentIds } = useRecent();
+  const favs = channels.filter((c) => favIds.includes(c.id));
+  const recent = recentIds
+    .map((id) => channels.find((c) => c.id === id))
+    .filter((c): c is NonNullable<typeof c> => Boolean(c));
 
   return (
     <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
@@ -52,20 +59,20 @@ function ProfilePage() {
 
       {tab === "history" && (
         <div className="space-y-3">
-          {continueWatching.map((c) => (
+          {recent.length === 0 && (
+            <p className="py-12 text-center text-sm text-muted-foreground">No watch history yet.</p>
+          )}
+          {recent.map((c) => (
             <Link
               key={c.id}
               to="/watch/$id"
               params={{ id: c.id }}
               className="glass flex items-center gap-4 rounded-xl p-3 transition-colors hover:bg-secondary/40"
             >
-              <img src={c.logo} alt="" className="h-16 w-24 rounded-lg object-cover" />
+              <img src={c.logo} alt="" className="h-16 w-24 rounded-lg bg-secondary object-contain p-1" />
               <div className="min-w-0 flex-1">
                 <div className="truncate font-semibold">{c.name}</div>
                 <div className="text-xs text-muted-foreground">{c.flag} {c.category} · Watched recently</div>
-                <div className="mt-2 h-1 overflow-hidden rounded-full bg-secondary">
-                  <div className="h-full gradient-primary" style={{ width: `${c.progress}%` }} />
-                </div>
               </div>
             </Link>
           ))}

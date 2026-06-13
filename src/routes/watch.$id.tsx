@@ -1,12 +1,11 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { useState } from "react";
-import { motion } from "framer-motion";
-import {
-  Play, Pause, Volume2, VolumeX, Maximize, PictureInPicture2,
-  Settings, Heart, Share2, Search,
-} from "lucide-react";
-import { channels } from "@/lib/iptv-data";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
+import { Search, TrendingUp, Loader2 } from "lucide-react";
+import { useChannel, useFavorites, useIptv, useRecent } from "@/hooks/useIptv";
 import { ChannelCard } from "@/components/ChannelCard";
+import { VideoPlayer } from "@/components/VideoPlayer";
+import { Heart, Share2 } from "lucide-react";
+import { useEffect } from "react";
 
 export const Route = createFileRoute("/watch/$id")({
   component: WatchPage,
@@ -14,119 +13,126 @@ export const Route = createFileRoute("/watch/$id")({
 
 function WatchPage() {
   const { id } = Route.useParams();
-  const channel = channels.find((c) => c.id === id);
-  if (!channel) throw notFound();
-
-  const [playing, setPlaying] = useState(true);
-  const [muted, setMuted] = useState(false);
-  const [quality, setQuality] = useState("Auto");
+  const { channel, isLoading } = useChannel(id);
+  const { data } = useIptv();
+  const { has, toggle } = useFavorites();
+  const { push } = useRecent();
+  const navigate = useNavigate();
   const [q, setQ] = useState("");
 
-  const similar = channels.filter((c) => c.category === channel.category && c.id !== channel.id).slice(0, 8);
-  const sideList = channels.filter((c) =>
-    c.name.toLowerCase().includes(q.toLowerCase()),
-  );
+  useEffect(() => {
+    if (channel) push(channel.id);
+  }, [channel?.id]);
+
+  const channels = data?.channels ?? [];
+
+  const similar = useMemo(() => {
+    if (!channel) return [];
+    return channels
+      .filter((c) => c.id !== channel.id && c.categories.some((x) => channel.categories.includes(x)))
+      .slice(0, 8);
+  }, [channel, channels]);
+
+  const sideList = useMemo(() => {
+    const base = q.trim()
+      ? channels.filter((c) => c.name.toLowerCase().includes(q.toLowerCase()))
+      : channels;
+    return base.slice(0, 80);
+  }, [q, channels]);
+
+  if (isLoading) {
+    return (
+      <div className="grid place-items-center py-32">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!channel) {
+    return (
+      <div className="grid place-items-center py-32 text-center">
+        <p className="text-muted-foreground">Channel not found.</p>
+        <Link to="/live" className="mt-4 text-primary hover:underline">
+          Browse Live TV →
+        </Link>
+      </div>
+    );
+  }
+
+  const goNext = () => {
+    const idx = channels.findIndex((c) => c.id === channel.id);
+    const next = channels[(idx + 1) % channels.length];
+    if (next) navigate({ to: "/watch/$id", params: { id: next.id } });
+  };
 
   return (
     <div className="mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-8">
       <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
         <div>
-          {/* PLAYER */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="group relative aspect-video w-full overflow-hidden rounded-2xl bg-black shadow-2xl"
-          >
-            <img src={channel.logo} alt={channel.name} className="h-full w-full object-cover opacity-50 blur-sm" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40" />
+          <div className="aspect-video w-full overflow-hidden rounded-2xl bg-black shadow-2xl">
+            <VideoPlayer
+              src={channel.streamUrl}
+              alternates={channel.alternateStreams}
+              poster={channel.logo}
+              onNext={goNext}
+            />
+          </div>
 
-            {/* Loading shimmer when toggling */}
-            {!playing && (
-              <div className="absolute inset-0 grid place-items-center">
-                <button
-                  onClick={() => setPlaying(true)}
-                  className="grid h-20 w-20 place-items-center rounded-full gradient-primary glow-cyan transition-transform hover:scale-110"
-                >
-                  <Play className="h-8 w-8 text-background" fill="currentColor" />
-                </button>
-              </div>
-            )}
-
-            {/* Live badge */}
-            <div className="absolute left-4 top-4 flex items-center gap-2">
-              <span className="flex items-center gap-1.5 rounded-full bg-[color:var(--live)] px-2.5 py-1 text-[11px] font-bold uppercase text-white animate-pulse-live">
-                <span className="h-1.5 w-1.5 rounded-full bg-white" /> Live
-              </span>
-              <span className="rounded-full glass px-2.5 py-1 text-[11px] font-medium">
-                {channel.viewers} watching
-              </span>
-            </div>
-
-            {/* Controls */}
-            <div className="absolute bottom-0 left-0 right-0 translate-y-2 p-4 opacity-0 transition-all group-hover:translate-y-0 group-hover:opacity-100">
-              <div className="glass flex items-center gap-2 rounded-full px-4 py-2.5">
-                <IconBtn onClick={() => setPlaying(!playing)}>
-                  {playing ? <Pause className="h-4 w-4" fill="currentColor" /> : <Play className="h-4 w-4" fill="currentColor" />}
-                </IconBtn>
-                <IconBtn onClick={() => setMuted(!muted)}>
-                  {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-                </IconBtn>
-                <div className="h-1 flex-1 rounded-full bg-white/20">
-                  <div className="h-full w-1/3 rounded-full gradient-primary" />
-                </div>
-                <select
-                  value={quality}
-                  onChange={(e) => setQuality(e.target.value)}
-                  className="rounded-md bg-transparent text-xs outline-none"
-                >
-                  {["Auto", "1080p", "720p", "480p"].map((q) => (
-                    <option key={q} value={q} className="bg-surface text-foreground">
-                      {q}
-                    </option>
-                  ))}
-                </select>
-                <IconBtn><PictureInPicture2 className="h-4 w-4" /></IconBtn>
-                <IconBtn><Settings className="h-4 w-4" /></IconBtn>
-                <IconBtn><Maximize className="h-4 w-4" /></IconBtn>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Channel info */}
           <div className="mt-6 flex flex-wrap items-start justify-between gap-4">
             <div className="flex min-w-0 items-center gap-4">
-              <img src={channel.logo} alt="" className="h-16 w-16 shrink-0 rounded-xl object-cover" />
+              {channel.logo ? (
+                <img src={channel.logo} alt="" className="h-16 w-16 shrink-0 rounded-xl bg-secondary object-contain p-1" />
+              ) : (
+                <div className="h-16 w-16 shrink-0 rounded-xl bg-secondary" />
+              )}
               <div className="min-w-0">
                 <h1 className="truncate text-2xl font-bold">{channel.name}</h1>
                 <p className="text-sm text-muted-foreground">
-                  {channel.flag} {channel.country} · {channel.category} · {channel.language}
-                  {channel.hd && <span className="ml-2 rounded bg-primary/15 px-1.5 py-0.5 text-[10px] font-bold text-primary">HD</span>}
+                  {channel.flag} {channel.countryName} · {channel.category}
+                  {channel.language && ` · ${channel.language}`}
+                  {channel.hd && (
+                    <span className="ml-2 rounded bg-primary/15 px-1.5 py-0.5 text-[10px] font-bold text-primary">
+                      HD
+                    </span>
+                  )}
                 </p>
               </div>
             </div>
             <div className="flex gap-2">
-              <button className="inline-flex items-center gap-2 rounded-full glass px-4 py-2 text-sm font-medium hover:text-primary">
-                <Heart className="h-4 w-4" /> Favorite
+              <button
+                onClick={() => toggle(channel.id)}
+                className={`inline-flex items-center gap-2 rounded-full glass px-4 py-2 text-sm font-medium hover:text-primary ${
+                  has(channel.id) ? "text-primary" : ""
+                }`}
+              >
+                <Heart className="h-4 w-4" fill={has(channel.id) ? "currentColor" : "none"} />
+                {has(channel.id) ? "Favorited" : "Favorite"}
               </button>
-              <button className="inline-flex items-center gap-2 rounded-full glass px-4 py-2 text-sm font-medium hover:text-primary">
+              <button
+                onClick={() => navigator.share?.({ title: channel.name, url: location.href }).catch(() => {})}
+                className="inline-flex items-center gap-2 rounded-full glass px-4 py-2 text-sm font-medium hover:text-primary"
+              >
                 <Share2 className="h-4 w-4" /> Share
               </button>
             </div>
           </div>
           <p className="mt-4 max-w-3xl text-muted-foreground">{channel.description}</p>
 
-          {/* Similar */}
-          <section className="mt-10">
-            <h2 className="mb-4 text-xl font-bold">Similar Channels</h2>
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-              {similar.map((c) => (
-                <ChannelCard key={c.id} channel={c} />
-              ))}
-            </div>
-          </section>
+          {similar.length > 0 && (
+            <section className="mt-10">
+              <div className="mb-4 flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-primary" />
+                <h2 className="text-xl font-bold">Similar Channels</h2>
+              </div>
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+                {similar.map((c) => (
+                  <ChannelCard key={c.id} channel={c} />
+                ))}
+              </div>
+            </section>
+          )}
         </div>
 
-        {/* Side list */}
         <aside className="lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:self-start">
           <div className="glass rounded-2xl p-4">
             <div className="mb-3 flex items-center gap-2 rounded-full bg-secondary/60 px-3 py-2">
@@ -148,10 +154,16 @@ function WatchPage() {
                     c.id === channel.id ? "bg-primary/10" : ""
                   }`}
                 >
-                  <img src={c.logo} alt="" className="h-10 w-10 rounded-md object-cover" />
+                  {c.logo ? (
+                    <img src={c.logo} alt="" className="h-10 w-10 rounded-md bg-secondary object-contain p-0.5" />
+                  ) : (
+                    <div className="h-10 w-10 rounded-md bg-secondary" />
+                  )}
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-sm font-medium">{c.name}</div>
-                    <div className="text-xs text-muted-foreground">{c.flag} {c.category}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {c.flag} {c.category}
+                    </div>
                   </div>
                   <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[color:var(--live)] animate-pulse-live" />
                 </Link>
@@ -161,16 +173,5 @@ function WatchPage() {
         </aside>
       </div>
     </div>
-  );
-}
-
-function IconBtn({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) {
-  return (
-    <button
-      onClick={onClick}
-      className="grid h-8 w-8 place-items-center rounded-full text-foreground/80 hover:bg-white/10 hover:text-primary"
-    >
-      {children}
-    </button>
   );
 }
