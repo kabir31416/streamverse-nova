@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LiveRouteImport } from './routes/live'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as WatchIdRouteImport } from './routes/watch.$id'
 import { Route as CategorySlugRouteImport } from './routes/category.$slug'
 
 const LiveRoute = LiveRouteImport.update({
@@ -23,6 +24,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WatchIdRoute = WatchIdRouteImport.update({
+  id: '/watch/$id',
+  path: '/watch/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CategorySlugRoute = CategorySlugRouteImport.update({
   id: '/category/$slug',
   path: '/category/$slug',
@@ -33,30 +39,34 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/live': typeof LiveRoute
   '/category/$slug': typeof CategorySlugRoute
+  '/watch/$id': typeof WatchIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/live': typeof LiveRoute
   '/category/$slug': typeof CategorySlugRoute
+  '/watch/$id': typeof WatchIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/live': typeof LiveRoute
   '/category/$slug': typeof CategorySlugRoute
+  '/watch/$id': typeof WatchIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/live' | '/category/$slug'
+  fullPaths: '/' | '/live' | '/category/$slug' | '/watch/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/live' | '/category/$slug'
-  id: '__root__' | '/' | '/live' | '/category/$slug'
+  to: '/' | '/live' | '/category/$slug' | '/watch/$id'
+  id: '__root__' | '/' | '/live' | '/category/$slug' | '/watch/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LiveRoute: typeof LiveRoute
   CategorySlugRoute: typeof CategorySlugRoute
+  WatchIdRoute: typeof WatchIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -75,6 +85,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/watch/$id': {
+      id: '/watch/$id'
+      path: '/watch/$id'
+      fullPath: '/watch/$id'
+      preLoaderRoute: typeof WatchIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/category/$slug': {
       id: '/category/$slug'
       path: '/category/$slug'
@@ -89,6 +106,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LiveRoute: LiveRoute,
   CategorySlugRoute: CategorySlugRoute,
+  WatchIdRoute: WatchIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
