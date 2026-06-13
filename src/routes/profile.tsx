@@ -59,20 +59,20 @@ function ProfilePage() {
 
       {tab === "history" && (
         <div className="space-y-3">
-          {continueWatching.map((c) => (
+          {recent.length === 0 && (
+            <p className="py-12 text-center text-sm text-muted-foreground">No watch history yet.</p>
+          )}
+          {recent.map((c) => (
             <Link
               key={c.id}
               to="/watch/$id"
               params={{ id: c.id }}
               className="glass flex items-center gap-4 rounded-xl p-3 transition-colors hover:bg-secondary/40"
             >
-              <img src={c.logo} alt="" className="h-16 w-24 rounded-lg object-cover" />
+              <img src={c.logo} alt="" className="h-16 w-24 rounded-lg bg-secondary object-contain p-1" />
               <div className="min-w-0 flex-1">
                 <div className="truncate font-semibold">{c.name}</div>
                 <div className="text-xs text-muted-foreground">{c.flag} {c.category} · Watched recently</div>
-                <div className="mt-2 h-1 overflow-hidden rounded-full bg-secondary">
-                  <div className="h-full gradient-primary" style={{ width: `${c.progress}%` }} />
-                </div>
               </div>
             </Link>
           ))}
