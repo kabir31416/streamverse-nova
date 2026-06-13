@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Settings, Clock, Heart, Tv, Bell, Globe, Shield } from "lucide-react";
-import { channels, continueWatching } from "@/lib/iptv-data";
+import { useFavorites, useIptv, useRecent } from "@/hooks/useIptv";
 
 export const Route = createFileRoute("/profile")({
   component: ProfilePage,
@@ -9,7 +9,14 @@ export const Route = createFileRoute("/profile")({
 
 function ProfilePage() {
   const [tab, setTab] = useState<"history" | "favorites" | "settings">("history");
-  const favs = channels.slice(0, 6);
+  const { data } = useIptv();
+  const channels = data?.channels ?? [];
+  const { ids: favIds } = useFavorites();
+  const { ids: recentIds } = useRecent();
+  const favs = channels.filter((c) => favIds.includes(c.id));
+  const recent = recentIds
+    .map((id) => channels.find((c) => c.id === id))
+    .filter((c): c is NonNullable<typeof c> => Boolean(c));
 
   return (
     <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
