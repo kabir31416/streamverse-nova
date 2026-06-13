@@ -9,12 +9,18 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as LiveRouteImport } from './routes/live'
 import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as WatchIdRouteImport } from './routes/watch.$id'
 import { Route as CategorySlugRouteImport } from './routes/category.$slug'
 
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LiveRoute = LiveRouteImport.update({
   id: '/live',
   path: '/live',
@@ -45,6 +51,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/favorites': typeof FavoritesRoute
   '/live': typeof LiveRoute
+  '/profile': typeof ProfileRoute
   '/category/$slug': typeof CategorySlugRoute
   '/watch/$id': typeof WatchIdRoute
 }
@@ -52,6 +59,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/favorites': typeof FavoritesRoute
   '/live': typeof LiveRoute
+  '/profile': typeof ProfileRoute
   '/category/$slug': typeof CategorySlugRoute
   '/watch/$id': typeof WatchIdRoute
 }
@@ -60,19 +68,33 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/favorites': typeof FavoritesRoute
   '/live': typeof LiveRoute
+  '/profile': typeof ProfileRoute
   '/category/$slug': typeof CategorySlugRoute
   '/watch/$id': typeof WatchIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/favorites' | '/live' | '/category/$slug' | '/watch/$id'
+  fullPaths:
+    | '/'
+    | '/favorites'
+    | '/live'
+    | '/profile'
+    | '/category/$slug'
+    | '/watch/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/favorites' | '/live' | '/category/$slug' | '/watch/$id'
+  to:
+    | '/'
+    | '/favorites'
+    | '/live'
+    | '/profile'
+    | '/category/$slug'
+    | '/watch/$id'
   id:
     | '__root__'
     | '/'
     | '/favorites'
     | '/live'
+    | '/profile'
     | '/category/$slug'
     | '/watch/$id'
   fileRoutesById: FileRoutesById
@@ -81,12 +103,20 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   FavoritesRoute: typeof FavoritesRoute
   LiveRoute: typeof LiveRoute
+  ProfileRoute: typeof ProfileRoute
   CategorySlugRoute: typeof CategorySlugRoute
   WatchIdRoute: typeof WatchIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/live': {
       id: '/live'
       path: '/live'
@@ -129,6 +159,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   FavoritesRoute: FavoritesRoute,
   LiveRoute: LiveRoute,
+  ProfileRoute: ProfileRoute,
   CategorySlugRoute: CategorySlugRoute,
   WatchIdRoute: WatchIdRoute,
 }
