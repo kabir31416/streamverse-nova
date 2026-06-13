@@ -1,17 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Heart, X } from "lucide-react";
-import { channels } from "@/lib/iptv-data";
 import { Link } from "@tanstack/react-router";
+import { useFavorites, useIptv } from "@/hooks/useIptv";
 
 export const Route = createFileRoute("/favorites")({
   component: FavoritesPage,
 });
 
 function FavoritesPage() {
-  const [favs, setFavs] = useState<string[]>(channels.slice(0, 8).map((c) => c.id));
-  const list = channels.filter((c) => favs.includes(c.id));
+  const { ids, toggle } = useFavorites();
+  const { data } = useIptv();
+  const channels = data?.channels ?? [];
+  const list = channels.filter((c) => ids.includes(c.id));
 
   return (
     <div className="mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-8">
@@ -46,8 +47,10 @@ function FavoritesPage() {
                 className="group relative overflow-hidden rounded-2xl glass"
               >
                 <Link to="/watch/$id" params={{ id: c.id }} className="block">
-                  <div className="relative h-32 overflow-hidden">
-                    <img src={c.logo} alt={c.name} className="h-full w-full object-cover transition-transform group-hover:scale-110" />
+                  <div className="relative h-32 overflow-hidden bg-secondary">
+                    {c.logo && (
+                      <img src={c.logo} alt={c.name} className="h-full w-full object-contain p-3 transition-transform group-hover:scale-110" />
+                    )}
                     <div className="absolute inset-0 bg-gradient-to-t from-background/90 to-transparent" />
                   </div>
                   <div className="p-3">
@@ -56,7 +59,7 @@ function FavoritesPage() {
                   </div>
                 </Link>
                 <button
-                  onClick={() => setFavs((f) => f.filter((id) => id !== c.id))}
+                  onClick={() => toggle(c.id)}
                   className="absolute right-2 top-2 grid h-8 w-8 place-items-center rounded-full bg-background/70 backdrop-blur transition-colors hover:bg-destructive hover:text-white"
                   aria-label="Remove"
                 >
