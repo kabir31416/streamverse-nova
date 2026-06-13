@@ -11,6 +11,7 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { TopNav } from "../components/TopNav";
 
 function NotFoundComponent() {
   return (
@@ -77,20 +78,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "StreamVerse TV — Premium Live IPTV Streaming" },
+      { name: "description", content: "Watch thousands of live TV channels, sports, movies, news and more in stunning HD on StreamVerse TV." },
+      { property: "og:title", content: "StreamVerse TV" },
+      { property: "og:description", content: "Premium live IPTV streaming across sports, movies, news and more." },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
-      {
-        rel: "stylesheet",
-        href: appCss,
-      },
+      { rel: "stylesheet", href: appCss },
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" },
     ],
   }),
   shellComponent: RootShell,
@@ -118,8 +117,13 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <TopNav />
+      <main className="min-h-screen pt-28 lg:pt-20">
+        <Outlet />
+      </main>
+      <footer className="mt-20 border-t border-border/40 py-8 text-center text-xs text-muted-foreground">
+        StreamVerse TV · Premium IPTV streaming · {new Date().getFullYear()}
+      </footer>
     </QueryClientProvider>
   );
 }
