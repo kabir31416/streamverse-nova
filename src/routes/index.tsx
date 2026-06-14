@@ -111,7 +111,7 @@ function HomePage() {
                 >
                   <div className="absolute inset-0 bg-background/10 transition-opacity group-hover:bg-background/0" />
                   <div className="relative flex h-full flex-col justify-between">
-                    <div className="text-3xl">{cat.icon}</div>
+                    <cat.icon className="h-7 w-7 text-white" strokeWidth={1.75} />
                     <div>
                       <div className="font-bold leading-tight text-white">{cat.name}</div>
                       <div className="text-xs text-white/80">{count} channels</div>
