@@ -9,7 +9,7 @@ import { useIptv } from "@/hooks/useIptv";
 export const Route = createFileRoute("/live")({
   head: () => ({
     meta: [
-      { title: "Live TV — StreamVerse" },
+      { title: "Live TV — BongoTV" },
       { name: "description", content: "Browse all live TV channels by category, country and language." },
     ],
   }),
