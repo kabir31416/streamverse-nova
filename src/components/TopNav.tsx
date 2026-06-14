@@ -26,12 +26,12 @@ export function TopNav() {
         className="fixed top-0 left-0 right-0 z-50 glass"
       >
         <div className="mx-auto flex h-16 max-w-[1600px] items-center gap-2 px-4 sm:px-6 lg:px-8">
-          <Link to="/" className="flex shrink-0 items-center gap-2">
-            <div className="grid h-9 w-9 place-items-center rounded-lg gradient-primary glow-cyan">
-              <Tv className="h-5 w-5 text-background" strokeWidth={2.5} />
+          <Link to="/" className="flex shrink-0 items-center gap-2.5">
+            <div className="grid h-9 w-9 place-items-center rounded-lg border border-border bg-surface">
+              <Tv className="h-4 w-4 text-foreground" strokeWidth={2} />
             </div>
-            <span className="hidden font-display text-lg font-bold tracking-tight sm:block">
-              Stream<span className="text-primary">Verse</span>
+            <span className="hidden font-display text-lg font-semibold tracking-tight sm:block">
+              Bongo<span className="text-muted-foreground">TV</span>
             </span>
           </Link>
 
