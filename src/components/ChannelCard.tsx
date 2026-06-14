@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { Heart, Play } from "lucide-react";
+import { Heart, Play, Radio } from "lucide-react";
 import type { Channel } from "@/lib/iptv-data";
 
 export function ChannelCard({ channel, large = false }: { channel: Channel; large?: boolean }) {
