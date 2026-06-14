@@ -124,7 +124,7 @@ function RootComponent() {
         <Outlet />
       </main>
       <footer className="mt-20 border-t border-border/40 py-8 text-center text-xs text-muted-foreground">
-        StreamVerse TV · Premium IPTV streaming · {new Date().getFullYear()}
+        BongoTV · Premium Live Streaming · {new Date().getFullYear()}
       </footer>
     </QueryClientProvider>
   );
