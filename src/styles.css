@@ -69,8 +69,8 @@
 }
 
 .dark {
-  --background: oklch(0.18 0.02 240);
-  --foreground: oklch(0.98 0.005 240);
+  --background: oklch(0.08 0 0);
+  --foreground: oklch(1 0 0);
 }
 
 @layer base {
@@ -85,21 +85,21 @@
 }
 
 @utility glass {
-  background: color-mix(in oklab, var(--surface) 70%, transparent);
-  backdrop-filter: blur(16px) saturate(140%);
-  border: 1px solid color-mix(in oklab, white 8%, transparent);
+  background: color-mix(in oklab, var(--surface) 75%, transparent);
+  backdrop-filter: blur(20px) saturate(120%);
+  border: 1px solid color-mix(in oklab, white 6%, transparent);
 }
 
 @utility glow-cyan {
-  box-shadow: 0 0 24px -4px color-mix(in oklab, var(--primary) 70%, transparent);
+  box-shadow: 0 0 24px -8px color-mix(in oklab, white 25%, transparent);
 }
 
 @utility text-glow {
-  text-shadow: 0 0 24px color-mix(in oklab, var(--primary) 60%, transparent);
+  text-shadow: 0 0 24px color-mix(in oklab, white 35%, transparent);
 }
 
 @utility gradient-primary {
-  background: linear-gradient(135deg, var(--primary), var(--accent));
+  background: linear-gradient(135deg, oklch(0.25 0 0), oklch(0.10 0 0));
 }
 
 @utility scrollbar-hide {
