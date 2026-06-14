@@ -27,7 +27,7 @@ function CategoryPage() {
     <div className="mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-8">
       <div className={`relative mb-8 overflow-hidden rounded-3xl bg-gradient-to-br ${cat.gradient} p-8 sm:p-12`}>
         <div className="relative z-10">
-          <div className="text-5xl">{cat.icon}</div>
+          <cat.icon className="h-12 w-12 text-white" strokeWidth={1.5} />
           <h1 className="mt-3 text-4xl font-bold text-white sm:text-5xl">{cat.name}</h1>
           <p className="mt-2 text-white/90">
             {isLoading ? "Loading…" : `${list.length.toLocaleString()} channels available · Live now`}

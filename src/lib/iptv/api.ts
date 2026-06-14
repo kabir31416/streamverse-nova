@@ -16,13 +16,9 @@ async function getJSON<T>(url: string): Promise<T> {
 }
 
 function codeToFlag(code: string): string {
-  if (!code || code.length !== 2) return "🌐";
-  const A = 0x1f1e6;
-  const a = "A".charCodeAt(0);
-  return String.fromCodePoint(
-    A + code.toUpperCase().charCodeAt(0) - a,
-    A + code.toUpperCase().charCodeAt(1) - a,
-  );
+  // Monochrome design: render the ISO country code instead of an emoji flag.
+  if (!code) return "—";
+  return code.toUpperCase();
 }
 
 let memoryCache: Channel[] | null = null;
@@ -87,7 +83,7 @@ export async function fetchIptvData(): Promise<{
       logo: ch.logo || logoMap.get(ch.id) || "",
       country: ch.country,
       countryName: country?.name ?? ch.country,
-      flag: country?.flag ?? codeToFlag(ch.country),
+      flag: codeToFlag(ch.country),
       categories: cats,
       category: cats[0],
       languages: country?.languages ?? [],
