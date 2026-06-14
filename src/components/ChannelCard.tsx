@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { Heart, Play } from "lucide-react";
+import { Heart, Play, Radio } from "lucide-react";
 import type { Channel } from "@/lib/iptv-data";
 
 export function ChannelCard({ channel, large = false }: { channel: Channel; large?: boolean }) {
@@ -20,8 +20,8 @@ export function ChannelCard({ channel, large = false }: { channel: Channel; larg
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent" />
-          <span className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-[color:var(--live)]/90 px-2 py-0.5 text-[10px] font-bold uppercase text-white animate-pulse-live">
-            <span className="h-1.5 w-1.5 rounded-full bg-white" />
+          <span className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-black/70 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white ring-1 ring-white/20 backdrop-blur">
+            <Radio className="h-3 w-3 animate-pulse-live" />
             Live
           </span>
           <span className="absolute right-3 top-3 text-lg">{channel.flag}</span>
