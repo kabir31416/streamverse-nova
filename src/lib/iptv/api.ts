@@ -83,7 +83,7 @@ export async function fetchIptvData(): Promise<{
       logo: ch.logo || logoMap.get(ch.id) || "",
       country: ch.country,
       countryName: country?.name ?? ch.country,
-      flag: country?.flag ?? codeToFlag(ch.country),
+      flag: codeToFlag(ch.country),
       categories: cats,
       category: cats[0],
       languages: country?.languages ?? [],
