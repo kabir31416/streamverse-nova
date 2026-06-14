@@ -116,16 +116,20 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const pathname = useRouter().state.location.pathname;
+  const focusMode = pathname.startsWith("/watch/");
 
   return (
     <QueryClientProvider client={queryClient}>
       <TopNav />
-      <main className="min-h-screen pt-28 lg:pt-20">
+      <main className={focusMode ? "min-h-screen" : "min-h-screen pt-28 lg:pt-20"}>
         <Outlet />
       </main>
-      <footer className="mt-20 border-t border-border/40 py-8 text-center text-xs text-muted-foreground">
-        BongoTV · Premium Live Streaming · {new Date().getFullYear()}
-      </footer>
+      {!focusMode && (
+        <footer className="mt-20 border-t border-border/40 py-8 text-center text-xs text-muted-foreground">
+          BongoTV · Premium Live Streaming · {new Date().getFullYear()}
+        </footer>
+      )}
     </QueryClientProvider>
   );
 }
